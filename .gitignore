@@ -4,6 +4,7 @@
 *projector_config.pbtxt
 *syn0.npy
 *syn1neg.npy
+*vectors.npy
 dblp-ref
 dblp-venue-*.json
 dblp-vn-*.json
@@ -11,3 +12,6 @@ dblp-reduced-vn-*.json
 list-vn*.json
 tf_idf*_VN.txt
 GoogleNews-vectors-negative300.bin
+/word2vec/GoogleNews-vectors-negative300/model/modelSaved
+/word2vec/GoogleNews-vectors-negative300/model/word2vec_model2
+/word2vec/GoogleNews-vectors-negative300/model/word2vec_model_vectors2
