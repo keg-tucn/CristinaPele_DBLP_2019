@@ -22,6 +22,6 @@ list-vn*.json
 tf_idf*_VN.txt
 oldDBLP/enwiki_dbow/doc2vec.bin
 GoogleNews-vectors-negative300.bin
-/word2vec/GoogleNews-vectors-negative300/model/modelSaved
-/word2vec/GoogleNews-vectors-negative300/model/word2vec_model2
-/word2vec/GoogleNews-vectors-negative300/model/word2vec_model_vectors2
+oldDBLP/word2vec/GoogleNews-vectors-negative300/model/modelSaved
+oldDBLP/word2vec/GoogleNews-vectors-negative300/model/word2vec_model2
+oldDBLP/word2vec/GoogleNews-vectors-negative300/model/word2vec_model_vectors2
