@@ -20,6 +20,7 @@ oldDBLP/VerbsAndNouns/tf-idf/df_VN.txt
 oldDBLP/VerbsAndNouns/tf-idf/idf_VN.txt
 list-vn*.json
 tf_idf*_VN.txt
+oldDBLP/enwiki_dbow/doc2vec.bin
 GoogleNews-vectors-negative300.bin
 /word2vec/GoogleNews-vectors-negative300/model/modelSaved
 /word2vec/GoogleNews-vectors-negative300/model/word2vec_model2
