@@ -12,7 +12,12 @@ oldDBLP/Nouns/list-n*.json
 oldDBLP/Nouns/dict-n.json
 oldDBLP/Nouns/list-n-final.json
 oldDBLP/Nouns/td-idf/df.txt
+oldDBLP/VerbsAndNouns/dict-vn.json
+oldDBLP/VerbsAndNouns/list-reduced-vn.json
+oldDBLP/VerbsAndNouns/lista-aparitii-vn.json
 dblp-reduced-vn-*.json
+oldDBLP/VerbsAndNouns/tf-idf/df_VN.txt
+oldDBLP/VerbsAndNouns/tf-idf/idf_VN.txt
 list-vn*.json
 tf_idf*_VN.txt
 GoogleNews-vectors-negative300.bin
