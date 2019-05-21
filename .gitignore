@@ -8,6 +8,10 @@
 dblp-ref
 dblp-venue-*.json
 dblp-vn-*.json
+oldDBLP/Nouns/list-n*.json
+oldDBLP/Nouns/dict-n.json
+oldDBLP/Nouns/list-n-final.json
+oldDBLP/Nouns/td-idf/df.txt
 dblp-reduced-vn-*.json
 list-vn*.json
 tf_idf*_VN.txt
