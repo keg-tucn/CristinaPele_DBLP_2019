@@ -1,3 +1,4 @@
+*dblp_data*
 *.ipynb_checkpoints
 *checkpoint
 *ckpt*
@@ -5,6 +6,7 @@
 *syn0.npy
 *syn1neg.npy
 *vectors.npy
+*.zip
 dblp-ref
 dblp-venue-*.json
 dblp-vn-*.json
