@@ -48,27 +48,17 @@ def apply_KMeans(X, n_clusters, max_iter=300, n_init=10, n_jobs=8, random_state=
 	return kmeans
 
 ###
-### Aplica XMeans.
+### Aplica XMeans. X-Means clustering algorithm, an extended K-Means which tries to automatically determine the number of clusters based on BIC scores. Starting with only one cluster, the X-Means algorithm goes into action after each run of K-Means, making local decisions about which subset of the current centroids should split themselves in order to better fit the data. The splitting decision is done by computing the Bayesian Information Criterion (BIC)
 ### param X: lista de liste cu puncte.
 ### param nr_cluster_initial: numarul de la clustere de la care se pleaca.
 ### param kmax: numarul maxim de clustere la care se poate ajunge
-### param viz: True - se afiseaza plot cu clusterele
 ### return xmeans_instance: obiect pyclustering.cluster.xmeans.xmeans
 ###
-def apply_XMeans(X, nr_cluster_initial, kmax, viz=True):
+def apply_XMeans(X, nr_cluster_initial, kmax):
 	initial_centers = kmeans_plusplus_initializer(X, nr_cluster_initial).initialize()
 
 	xmeans_instance = xmeans(X, initial_centers, kmax)
 	xmeans_instance.process()
-
-	clusters = xmeans_instance.get_clusters()
-	centers = xmeans_instance.get_centers()
-
-	if viz:
-		visualizer = cluster_visualizer()
-		visualizer.append_clusters(clusters, sample)
-		visualizer.append_cluster(centers, None, marker='*', markersize=10)
-		visualizer.show()
 
 	return xmeans_instance
 

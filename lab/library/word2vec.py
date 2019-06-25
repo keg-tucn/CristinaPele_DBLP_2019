@@ -1,6 +1,7 @@
 from gensim.models import Word2Vec
 import gensim.downloader as api
 import numpy as np
+import decimal
 
 #https://radimrehurek.com/gensim/models/word2vec.html
 #https://github.com/RaRe-Technologies/gensim/blob/3d7293f3831250a47cf8e85a7f493a87c7d6ac32/gensim/models/word2vec.py#L865
@@ -69,9 +70,8 @@ import numpy as np
 ###
 def train_word2vec(doc_list, model_name, size=100, window=1, min_count=1, workers=8, iter=20, hs=0):
     model = Word2Vec(size=size, window=window, min_count=min_count, workers=workers, iter=iter)
-    model.build_vocab(word_list)
-    model.train(word_list,total_examples=model.corpus_count, epochs=iter)
-    delete_temporary_training_data(replace_word_vectors_with_normalized=False)
+    model.build_vocab(doc_list)
+    model.train(doc_list,total_examples=model.corpus_count, epochs=iter,compute_loss=True)
     model_name += '.model'
     model.save(model_name)
     return model
@@ -120,15 +120,24 @@ def apply_model_w2v(doc_list, model, size, func="sum"):
 			try:
 				embed = model[word]
 				words+=1
-				for i in range(0,100):
+				for i in range(0,size):
 					X_doc[i] += embed[i]
 			except:
 				not_found_words += 1
 		if words > 0:
 			if func == 'avg':
-				for i in range(0,100):
+				for i in range(0,size):
 					X_doc[i] /= words
 			total_words += words
 			X.append(X_doc)
 	print('Not found ' + str(not_found_words) + ' words from ' + str(total_words) + ' words.')
 	return X
+
+
+###
+### Calculeaza perplexity pentru modelul antrenat.
+### param model: modelul antrenat.
+### return perplexity: 2**train_loss
+###
+def get_perplexity(model):
+	return decimal.Decimal(2)**decimal.Decimal(model.get_latest_training_loss())

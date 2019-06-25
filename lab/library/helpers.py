@@ -1,5 +1,5 @@
 import operator # folosit la sortarea dictionarelor
-
+import numpy as np
 ###
 ### Elimina listele goale dintr-o lista de liste.
 ### param doc_list: lista de liste.
@@ -64,3 +64,37 @@ def get_max_dict(dict_):
         if dict_[key] > max_ :
             max_ = dict_[key]
     return max_
+
+
+###
+### Avand o lista de label de forma [[elem_cls,..,elem_cls],..,[elem_cls]] o transforma in [cls,cls,...,cls].
+### param clusters: lista de labels initiala
+### return X: vector cu lista de labels finala
+###
+def get_labels(clusters):
+    nr_points = 0
+    for c in clusters:
+        nr_points += len(c)
+    X = np.zeros(nr_points)
+    crt_c = 0
+    for c in clusters:
+        for elem in c:
+            X[elem] = crt_c
+        crt_c += 1
+    return X
+
+###
+### Calculeaza numarul de intrari dintr-un set de fisiere.
+### param cale: calea spre setul de fisiere.
+### param range_: numarul de fisiere.
+### return n: numarul de intrari din fisiere.
+###
+def calculeaza_nr_articole(cale, range_):
+    n = 0
+    for i in range(0, range_):
+        fisier = cale + str(i) + '.txt'
+        r = open(fisier,'r')
+        for linie in r:
+            n += 1
+        r.close()
+    return n

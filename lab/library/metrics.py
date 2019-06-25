@@ -1,5 +1,9 @@
 import matplotlib.pyplot as plt # vizualizari
 
+from sklearn.metrics import silhouette_score
+import matplotlib.cm as cm
+
+
 # gensim.models.word2vec.Word2Vec.score(
 # 	sentences, 					-> lista de liste (propozitii)
 # 	total_sentences=1000000, 	-> numarul de propozitii
@@ -23,14 +27,21 @@ def elbow_kmeans(X, range):
         wcss.append(kmeans.inertia_) 
 
         plt.plot(range(1,range), wcss, 'r')
-		plt.title('The elbow method')
-		plt.xlabel('The number of clusters')
-		plt.ylabel('WCSS')
-		plt.show()
+        plt.title('The elbow method')
+        plt.xlabel('The number of clusters')
+        plt.ylabel('WCSS')
+        plt.show()
 
     return wcss
 
 
-
+###
+### Aplica silhouette.
+### param X: lista de vectori
+### param cluster_labels: lista de labels pentru vectori
+###
+def apply_silhouette(X, cluster_labels):
+    silhouette_avg = silhouette_score(X, cluster_labels)
+    print("The average silhouette_score is :", silhouette_avg) 
 
 

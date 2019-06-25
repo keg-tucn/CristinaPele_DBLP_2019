@@ -124,3 +124,79 @@ def elimina_aparitii(doc_list,word_dict, min_a, max_a):
         new_doc_list.append(new_doc)
     # elimina doc goale
     return eliminate_empty_lists(new_doc_list)
+
+###
+### Calculeaza df pentru un camp dintr-un set de fisiere.
+### param cale: calea spre setul de fisiere.
+### param range_: numarul de fisiere.
+### param camp: campul pentru care se va calcula df.
+### return df: dictionar {cuvant, valoare_df} 
+###
+def calculeaza_df(cale, range_, camp):
+    df = {}
+    for i in range(0,range_):
+        fisier_citire = cale + str(i) + '.txt'
+        r = open(fisier_citire,'r')
+        
+        for linie in r:
+            df_paper = []
+            articol_curent = json.loads(linie)
+            crt_df =remove_duplicates(articol_curent[camp])
+            for elem in crt_df:
+                try:
+                    df[elem] += 1
+                except:
+                    df[elem] = 1   
+        r.close()
+    return df
+
+
+###
+### Calculeaza idf pentru un camp dintr-un set de fisiere.
+### param cale: calea spre setul de fisiere.
+### param range_: numarul de fisiere.
+### param n: numarul de articole din fisiere.
+### param df: dictionar document frequency pentru cuvintele din camp(daca este {}, se calculeaza).
+### param camp: campul pentru care se doreste calcularea idf(default "", daca df este {}. este obligatorie valarea campului).
+### return df: dictionarul rezultat {cuvant:valoare_idf}
+###
+def calculeaza_idf(cale, range_, n, df = {}, camp = ""):
+    if len(df) == 0:
+        df = calculeaza_df(cale, range_, camp)
+    for elem in df:
+        df[elem] = n / df[elem]
+    return df
+
+
+###
+### Calculeaza tf_idf pentru un set de fisiere si pune rezultatele tot in fisiere.
+### param cale_in: calea spre fiserele de intrare.
+### param cale_out: calea spre fisierele de iesire.
+### param range_: numarul de fisiere de intrare.
+### param idf_dict: dictionar {cuvant:valoare_idf}.
+### param camp: campul din datele din fisier pentru care se va calcula tf_idf.
+###
+def calculeaza_tf_idf(cale_in, cale_out, range_, idf_dict, camp):
+    for i in range(0, range_):
+        fisier_in = cale_in + str(i) + '.txt'
+        fisier_out = cale_out + str(i) + '.txt'
+        r = open(fisier_in,'r')
+        w = open(fisier_out,'w')
+        for linie in r:
+            tf = {}
+            articol_curent = json.loads(linie)
+            camp_curent = articol_curent[camp]
+            for cuv in camp_curent:
+                try:
+                    tf[cuv] += 1
+                except:
+                    tf[cuv] = 1
+                    
+            for cuv in tf:
+                tf_idf[cuv] = int(tf[cuv] * int(idf_dict[cuv]))
+            articol_curent[camp] = tf_idf
+            w.write(json.dumps(articol_curent))
+            w.write('\n')
+            
+        w.close()   
+        r.close()
