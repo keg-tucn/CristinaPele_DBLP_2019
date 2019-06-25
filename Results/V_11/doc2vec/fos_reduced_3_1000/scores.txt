@@ -1,0 +1,12 @@
+doc2vec pretrained interval 3-1000 pe FOS
+
+For n_clusters = 15 The average silhouette_score is : 0.015563502
+For n_clusters = 16 The average silhouette_score is : 0.013765111
+For n_clusters = 17 The average silhouette_score is : 0.017817581
+For n_clusters = 18 The average silhouette_score is : 0.014000637
+For n_clusters = 19 The average silhouette_score is : 0.01648288
+For n_clusters = 20 The average silhouette_score is : 0.014771664
+For n_clusters = 21 The average silhouette_score is : 0.0138631165
+For n_clusters = 22 The average silhouette_score is : 0.01566375
+For n_clusters = 23 The average silhouette_score is : 0.012614884
+For n_clusters = 24 The average silhouette_score is : 0.011963502
