@@ -1,5 +1,11 @@
+DBLP_V11/DBLP_V11.rar
+*.rar
 *.ipynb_checkpoints*
 *.rar
 *.ckpt.*
 */enwiki_dbow/*
 *doc2vec.bin*
+CORA/
+tf_data.ckpt.data-00000-of-00001
+projector_config.pbtxt
+checkpoint
