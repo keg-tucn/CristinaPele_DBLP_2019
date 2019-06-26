@@ -1,0 +1,56 @@
+(lithuanian academy sciences)
+adaptive agents multi agents systems
+application specific systems architectures processors
+aspect oriented software development 
+business intelligence real time enterprises 
+case based reasoning 
+component based software engineering
+content based multimedia indexing
+cross language evaluation forum
+cyber enabled distributed computing knowledge discovery
+databases information systems peer peer computing
+distributed event based systems
+electro information technology
+email anti spam
+embedded systems real time multimedia
+euromicro real time systems
+explanation aware computing
+finite state methods natural language processing
+formal methods open object based distributed systems
+generation teletraffic wired wireless advanced networking
+hardware oriented security trust
+high-performance architecture
+java technologies real time embedded systems
+logic based program synthesis transformation
+agent multi agent systems technologies applications
+multiple valued logic
+nano micro engineered molecular systems
+network based information systems
+object oriented programming
+pacific multi agents
+parallel distributed computing systems (isca)
+parallel distributed network based processing 
+partial evaluation semantic based program manipulation
+peer peer computing
+peer peer systems
+procesamiento lenguaje natural
+programming multi agent systems
+real time systems
+reconfigurable communication centric systems chip
+rundbrief gi-fachgruppe 5.10 informationssystem-architekturen
+schedae informaticae
+scientific riga technical university. sciences
+self-adaptive self-organizing systems
+service oriented computing applications
+shanghai jiaotong university (science)
+signal image technology internet based systems
+sigsmall\/pc notes
+software engineering artificial intelligence networking parallel distributed computing
+solid state circuits
+variability modelling software intensive systems
+wired wireless internet communications
+worst case execution time analysis
+scientific riga technical university. sciences
+signal image technology internet based systems
+software engineering artificial intelligence networking parallel distributed computing
+
