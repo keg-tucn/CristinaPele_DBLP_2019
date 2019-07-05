@@ -1,0 +1,34 @@
+Rezultate venue
+
+I. Venue complet
+-> nr of venues: 3693;
+-> word2vec pretrained sum
+	-> Not found 3 words from 13029 words.  => 3692 venues 
+	-> Similaritate 5 
+			-> comparatie totala : 57.85 %
+			-> comparatie cu fos biggest weight : 32.60%
+	-> XMeans
+		
+-> word2vec pretrained avg
+	-> Not found 3 words from 13029 words.  => 3692 venues 
+	-> Similaritate 5  
+			-> comparatie totala : 56.88 %
+			-> comparatie cu fos biggest weight : 32.24 %
+
+
+
+II. Venue eliminat TF [5-1000]
+-> nr of venues: 792;
+-> Not found 2 words from 1155 words.  => 790 venues
+-> Similaritate 5 -> word2vec sum -> comparatie totala : 46.14 %
+				  				  -> comparatie cu fos biggest weight : 19.93 %
+				  -> word2vec avg -> comparatie totala : 39.16 %
+				  				  -> comparatie cu fos biggest weight : 15.93 %
+				  
+III. Venue eliminat TF [25-5000]
+-> nr of venues: 1095
+-> Not found 1 words from 1846 words.  => 1094 venues
+-> Similaritate 5 -> word2vec sum -> comparatie totala : 57.33%
+				  				  -> comparatie cu fos biggest weight : 31.02 % 
+				  -> word2vec avg -> comparatie totala : 46.31
+				  				  -> comparatie cu fos biggest weight : 22.64 %
