@@ -1,0 +1,1114 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import json\n",
+    "import sys\n",
+    "import numpy as np\n",
+    "sys.path.append('../library')\n",
+    "from clustering import *\n",
+    "from helpers import *\n",
+    "import scipy"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def get_values(X):\n",
+    "    X_list = []\n",
+    "    for elem in X:\n",
+    "        X_list.append(X[elem])\n",
+    "    return X_list\n",
+    "\n",
+    "def get_keys(X):\n",
+    "    X_list = []\n",
+    "    for elem in X:\n",
+    "        X_list.append(elem)\n",
+    "    return X_list\n",
+    "\n",
+    "###\n",
+    "### Transforma un obiect fcm [[elems_clasa_0],..,[elem_clasa_n]] in lista de labels [class_elem_0, .., class_elem_n].\n",
+    "### param labels: obiect de tip fcm.\n",
+    "### return lista.\n",
+    "###\n",
+    "def create_class_labels(labels,venues, size):\n",
+    "    l = np.zeros(size, dtype=int)\n",
+    "    i = 0\n",
+    "    for class_ in labels:\n",
+    "        for elem in class_:\n",
+    "            l[elem] = i\n",
+    "        i += 1\n",
+    "    dict_ = {}\n",
+    "    for i,elem in enumerate(venues):\n",
+    "        dict_[elem] = int(l[i])\n",
+    "    return dict_\n",
+    "\n",
+    "def run_fuzzy(path, print_ = False):\n",
+    "    r = open(path)\n",
+    "    X = json.load(r)\n",
+    "    r.close()\n",
+    "    \n",
+    "    X_values = get_values(X)\n",
+    "    X_keys = get_keys(X)\n",
+    "    \n",
+    "    if print_ == True:\n",
+    "        print('size vector ',len(X), len(X_values))\n",
+    "    xmeans = apply_XMeans(X_values,1,100)\n",
+    "    \n",
+    "    cls = len(xmeans.get_clusters())\n",
+    "    \n",
+    "    fcm = apply_fuzzy(X_values,cls)\n",
+    "    labels = fcm.get_membership()\n",
+    "    \n",
+    "    i = 0\n",
+    "    X_dict = {}\n",
+    "    for elem in labels:\n",
+    "        X_dict[X_keys[i]] = elem \n",
+    "        i+=1\n",
+    "    return X_dict, cls\n",
+    "    \n",
+    "\n",
+    "###\n",
+    "### Transforma lista de weights a clusterelor in dictionar de forma {cluster:weight}, daca weight este mai \n",
+    "### mare decat mijlocul de valori din weights initial.\n",
+    "### param weights: lista de weights initiala.\n",
+    "### return dict_ sau -1 daca nu este nici o valoare din lista  mai maire de valoarea de middle.\n",
+    "###\n",
+    "def get_class_weights(weights):\n",
+    "    dict_ = {}\n",
+    "    min_ = min(weights)\n",
+    "    max_ = max(weights)\n",
+    "    middle = (max_ + min_)/2\n",
+    "    for i in range(0,len(weights)):\n",
+    "        if weights[i] >= middle:\n",
+    "            dict_[i] = weights[i]\n",
+    "            \n",
+    "    if len(dict_) == 0:\n",
+    "        return -1\n",
+    "    return dict_\n",
+    "\n",
+    "\n",
+    "    \n",
+    "def print_results(mem, path_in, path_out, nrFiles, space= False):\n",
+    "    excluded = 0\n",
+    "    for i in range(0, nrFiles):\n",
+    "        r = open(path_in+str(i)+'.txt', 'r')\n",
+    "        w = open(path_out+str(i)+'.txt', 'w')\n",
+    "        \n",
+    "        for line in r:\n",
+    "            art_crt = json.loads(line)\n",
+    "            new_art = {}\n",
+    "            new_art['id'] = art_crt['id']\n",
+    "            new_art['venue'] = art_crt['venue']\n",
+    "            new_art['abstract'] = art_crt['abstract']\n",
+    "            new_art['fos'] = art_crt['fos']\n",
+    "            venue = \"\"\n",
+    "            for elem in art_crt[\"venue\"]:\n",
+    "                venue+= elem + \" \"\n",
+    "            if space == False:\n",
+    "                venue = venue[0:len(venue)-1]\n",
+    "            try:\n",
+    "                new_art['class_weights'] = get_class_weights(mem[venue])\n",
+    "            except KeyError:\n",
+    "                excluded += 1\n",
+    "            \n",
+    "            w.write(json.dumps(new_art))\n",
+    "            w.write('\\n')\n",
+    "            \n",
+    "        w.close()\n",
+    "        r.close()\n",
+    "    return excluded"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Complete"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Doc2Vec"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "3583 10\n"
+     ]
+    }
+   ],
+   "source": [
+    "mem_max = []\n",
+    "cls_max = 0\n",
+    "for _ in range(0,100):\n",
+    "    mem, cls = run_fuzzy('../Date/doc2vec/Venue/d2v_venue_complete.txt')\n",
+    "    if cls > cls_max:\n",
+    "        cls_max = cls\n",
+    "        mem_max = mem\n",
+    "print(len(mem_max), cls_max)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "visual science technology [0.10002370240921045, 0.099977749561627, 0.09999121471022086, 0.10000474778067919, 0.10000989709720065, 0.09996811102121816, 0.09998910066543272, 0.09998889971427007, 0.10002618223876865, 0.10002039480137227]\n"
+     ]
+    }
+   ],
+   "source": [
+    "for elem in mem_max:\n",
+    "    print (elem, mem_max[elem])\n",
+    "    break"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "print_results(mem_max, '../Date/Initiale/Complet/file', '../Rezultate/Fuzzy/Venue/Doc2vec/10clus_file', 169)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Word2Vec pretrained"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Avg"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "3582 17\n"
+     ]
+    }
+   ],
+   "source": [
+    "mem_max = []\n",
+    "cls_max = 0\n",
+    "for _ in range(0,100):\n",
+    "    mem,cls = run_fuzzy('../Date/word2vec-pretrained/Venue/w2v_avg_50_c.txt')\n",
+    "    if cls > cls_max:\n",
+    "        cls_max = cls\n",
+    "         mem_max = mem\n",
+    "print(len(mem_max), cls_max)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "abdominal imaging  [0.05877621005636656, 0.05884184402767573, 0.058820516732264086, 0.05881140575473926, 0.0588349921349474, 0.05884212320231042, 0.0588169728489184, 0.058831116058808905, 0.0588389206459364, 0.058814721081994016, 0.058823176646338814, 0.0588116487246235, 0.058820415233354434, 0.05883029681585913, 0.05885480827198104, 0.0588247136285657, 0.05880611813531621]\n"
+     ]
+    }
+   ],
+   "source": [
+    "for elem in mem_max:\n",
+    "    print (elem, mem_max[elem])\n",
+    "    break"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0\n",
+      "1\n"
+     ]
+    }
+   ],
+   "source": [
+    "excluded = print_results(mem_max, '../Date/Initiale/Complet/file', '../Rezultate/Fuzzy/Venue/Word2vec_pretrained/avg/17clus_file', 169, True)\n",
+    "print(excluded)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Sum"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "3582 18\n"
+     ]
+    }
+   ],
+   "source": [
+    "mem_max = []\n",
+    "cls_max = 0\n",
+    "for _ in range(0,300):\n",
+    "    mem,cls = run_fuzzy('../Date/word2vec-pretrained/Venue/w2v_sum_50_c.txt')\n",
+    "    if cls > cls_max:\n",
+    "        cls_max = cls\n",
+    "        mem_max = mem\n",
+    "print(len(mem_max), cls_max)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "abdominal imaging  [0.08571016837689814, 0.043613703270907765, 0.03739134885351368, 0.03196970277594468, 0.03269941259053801, 0.03414755018641388, 0.08232933611288842, 0.03247007184852798, 0.07972924064041365, 0.08242033757420353, 0.08514122684952553, 0.07001151402903943, 0.03223503325458151, 0.031750334365511924, 0.04336013846177486, 0.03316864670409387, 0.07651240071664107, 0.08533983338858207]\n"
+     ]
+    }
+   ],
+   "source": [
+    "for elem in mem_max:\n",
+    "    print (elem, mem_max[elem])\n",
+    "    break"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "excluded = print_results(mem_max, '../Date/Initiale/Complet/file', '../Rezultate/Fuzzy/Venue/Word2vec_pretrained/sum/18clus_file', 169, True)\n",
+    "print(excluded)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Word2vec gensim"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Avg"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 79,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "3583 24\n"
+     ]
+    }
+   ],
+   "source": [
+    "mem_max = []\n",
+    "cls_max = 0\n",
+    "for _ in range(0,300):\n",
+    "    mem,cls = run_fuzzy('../Date/word2vec-gensim/Venue/w2v_gensim_avg_50_c.txt')\n",
+    "    if cls > cls_max:\n",
+    "        cls_max = cls\n",
+    "        mem_max = mem\n",
+    "print(len(mem_max), cls_max)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 80,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "abdominal imaging  [0.04165587585150972, 0.041671916807365886, 0.041662413081522714, 0.041665060446269934, 0.04166885994216144, 0.04167237631238547, 0.04166948934237367, 0.041663151108971765, 0.04166638424599939, 0.04166813973397048, 0.041663426015580596, 0.0416708920196258, 0.04166803130191608, 0.041662617338378845, 0.04167346486604964, 0.041667061556429796, 0.041663236967043424, 0.04166776701072893, 0.04166998301418075, 0.04166943309799835, 0.041665439490585356, 0.0416648355061113, 0.04166814473404646, 0.041662000208794216]\n"
+     ]
+    }
+   ],
+   "source": [
+    "for elem in mem_max:\n",
+    "    print (elem, mem_max[elem])\n",
+    "    break"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 81,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0\n"
+     ]
+    }
+   ],
+   "source": [
+    "excluded = print_results(mem_max, '../Date/Initiale/Complet/file', '../Rezultate/Fuzzy/Venue/Word2vec_gensim/avg/24clus_file', 169, True)\n",
+    "print(excluded)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Sum"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "mem_max = []\n",
+    "cls_max = 0\n",
+    "for _ in range(0,300):\n",
+    "    mem,cls = run_fuzzy('../Date/word2vec-gensim/Venue/w2v_gensim_sum_50_c.txt')\n",
+    "    if cls > cls_max:\n",
+    "        cls_max = cls\n",
+    "        mem_max = mem\n",
+    "print(len(mem_max), cls_max)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "for elem in mem_max:\n",
+    "    print (elem, mem_max[elem])\n",
+    "    break"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "973\n"
+     ]
+    }
+   ],
+   "source": [
+    "excluded = print_results(mem_max, '../Date/Initiale/Complet/file', '../Rezultate/Fuzzy/Venue/Word2vec_gensim/sum/20clus_file', 169, True)\n",
+    "print(excluded)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Word2vec tensorflow"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Avg"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "3583 1\n"
+     ]
+    }
+   ],
+   "source": [
+    "mem_max = []\n",
+    "cls_max = 0\n",
+    "for _ in range(0,300):\n",
+    "    mem,cls = run_fuzzy('../Date/word2vec-tensorflow/Venue/w2v_tf_avg_50_c.txt')\n",
+    "    if cls > cls_max:\n",
+    "        cls_max = cls\n",
+    "        mem_max = mem\n",
+    "print(len(mem_max), cls_max)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "abdominal imaging  [0.20031791692564785, 0.19987774928417537, 0.1999013226920146, 0.19987146271349787, 0.20003154838466428]\n"
+     ]
+    }
+   ],
+   "source": [
+    "for elem in mem_max:\n",
+    "    print (elem, mem_max[elem])\n",
+    "    break"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 75,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0\n"
+     ]
+    }
+   ],
+   "source": [
+    "excluded = print_results(mem_max, '../Date/Initiale/Complet/file', '../Rezultate/Fuzzy/Venue/Word2vec_tensorflow/avg/2clus_file', 169, True)\n",
+    "print(excluded)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Sum"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "3583 5\n"
+     ]
+    }
+   ],
+   "source": [
+    "mem_max = []\n",
+    "cls_max = 0\n",
+    "for _ in range(0,300):\n",
+    "    mem,cls = run_fuzzy('../Date/word2vec-tensorflow/Venue/w2v_tf_sum_50_c.txt')\n",
+    "    if cls > cls_max:\n",
+    "        cls_max = cls\n",
+    "        mem_max = mem\n",
+    "print(len(mem_max), cls_max)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "abdominal imaging  [0.20031791692564785, 0.19987774928417537, 0.1999013226920146, 0.19987146271349787, 0.20003154838466428]\n"
+     ]
+    }
+   ],
+   "source": [
+    "for elem in mem_max:\n",
+    "    print (elem, mem_max[elem])\n",
+    "    break"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0\n"
+     ]
+    }
+   ],
+   "source": [
+    "excluded = print_results(mem_max, '../Date/Initiale/Complet/file', '../Rezultate/Fuzzy/Venue/Word2vec_tensorflow/sum/5clus_file', 169, True)\n",
+    "print(excluded)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Evaluate fuzzy"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "###\n",
+    "### Concateneaza o lista de string.\n",
+    "### param list_: lista.\n",
+    "### return camp: lista concatenata.\n",
+    "###\n",
+    "def extrage_camp(list_):\n",
+    "    camp = \"\"\n",
+    "    for elem in list_:\n",
+    "        camp += elem + ' '\n",
+    "    return camp[0:len(camp)-1]\n",
+    "\n",
+    "###\n",
+    "### Verifica daca o cheie se gaseste intr-un dictionar si returneaza valoarea din dictionar.\n",
+    "### param dict_cluster: dictionarul.\n",
+    "### param nr_cluster: cheia\n",
+    "### return True, valoare daca gaseste sau False, -1 daca nu gaseste\n",
+    "###\n",
+    "def is_in_cluster(dict_clusters, nr_cluster):\n",
+    "    try :\n",
+    "        return True, dict_clusters[nr_cluster]\n",
+    "    except KeyError:\n",
+    "        return False, -1\n",
+    "\n",
+    "\n",
+    "###\n",
+    "### Parcurge fisierele cu weight_cluster si creeaza un dictionar de forma {venue:weight} pentru un cluster dat.\n",
+    "### param cluster: numarul clusterului pentru care se face cautarea (! In format string)\n",
+    "### param path: calea spre fisiere\n",
+    "### param nrFiles: numarul de fisiere\n",
+    "### return cluster_dict: dictionarul cuu venues si weight asociat pentru clusterul cerut\n",
+    "###\n",
+    "def extragere_puncte_cluster(cluster, path, nrFiles):\n",
+    "    cluster_dict = {}\n",
+    "    for i in range(0, nrFiles):\n",
+    "        file = path+str(i)+'.txt'\n",
+    "        r = open(file,'r')\n",
+    "        for line in r:\n",
+    "            \n",
+    "            art_crt = json.loads(line)\n",
+    "            try:\n",
+    "                includes, weight = is_in_cluster(art_crt['class_weights'],cluster) \n",
+    "            except KeyError:\n",
+    "                continue\n",
+    "            if (includes == True):\n",
+    "                venue = art_crt['venue']\n",
+    "                venue = extrage_camp(venue)\n",
+    "                try :\n",
+    "                    cluster_dict[venue] += weight \n",
+    "                except KeyError:\n",
+    "                    cluster_dict[venue] = weight   \n",
+    "        r.close()\n",
+    "    return cluster_dict\n",
+    "\n",
+    "def calculeaza_sume_distante(elem, cluster_dict, model):\n",
+    "    dist = 0\n",
+    "    for elem_crt in cluster_dict:\n",
+    "        if elem == elem_crt:\n",
+    "            continue\n",
+    "        dist += calculeaza_distanta(model[elem], model[elem_crt])\n",
+    "    return dist\n",
+    "\n",
+    "def calcul_inter_cluster(model, cluster_dict): \n",
+    "    # am un dict {venue: weight}\n",
+    "    # am modelul care face corespondenta venue -> embedding\n",
+    "    sum_total = 0\n",
+    "    for elem_crt in cluster_dict:\n",
+    "        for elem in cluster_dict:\n",
+    "            if elem_crt == elem:\n",
+    "                continue\n",
+    "            sum_ = calculeaza_distanta(model[elem], model[elem_crt])\n",
+    "            sum_ *= cluster_dict[elem]\n",
+    "            print(cluster_dict[elem])\n",
+    "        sum_total += sum_\n",
+    "        \n",
+    "    print('cluster ', sum_total, len(cluster_dict))\n",
+    "    return sum_total / len(cluster_dict)\n",
+    "\n",
+    "## cluster_dict : {venue:weight}\n",
+    "def calc_centro(model, cluster_dict, dim): \n",
+    "    sum_total = 0\n",
+    "    \n",
+    "    centroid = []\n",
+    "    for i in range(0, dim):\n",
+    "        centroid.append(0)\n",
+    "    \n",
+    "    for elem in cluster_dict:\n",
+    "        elem_m = model[elem]\n",
+    "        for i in range(0, dim):\n",
+    "            centroid[i] += elem_m[i]\n",
+    "            \n",
+    "    for i in range(0, dim):\n",
+    "        centroid[i] /= dim\n",
+    "    return centroid\n",
+    "\n",
+    "###\n",
+    "### Calcularea centroizilor din toate clusterele.\n",
+    "### param model: model\n",
+    "### param cls: id de cluster string\n",
+    "### param nrClusters: numarul de clustere\n",
+    "### param path: calea spre fisiere\n",
+    "### param nrFiles: numarul de fisiere\n",
+    "### return centroid_list: lista de controizi\n",
+    "###\n",
+    "def calcul_centroizi(model, cls, model_size, nrClusters, path, nrFiles):\n",
+    "    centroid_list = []\n",
+    "    for i in range(0,nrClusters):\n",
+    "        cluster_dict = extragere_puncte_cluster(cls[i],path, nrFiles)\n",
+    "        centroid_list.append(calc_centro(model, cluster_dict, model_size))\n",
+    "    return centroid_list\n",
+    "\n",
+    "\n",
+    "def calcul_intra_cluster(centroid_list):\n",
+    "    dist = 0\n",
+    "    \n",
+    "    for centroid_crt in centroid_list:\n",
+    "        for centroid in centroid_list:\n",
+    "            if centroid == centroid_list:\n",
+    "                continue\n",
+    "            dist += calculeaza_distanta(centroid_crt, centroid)\n",
+    "    print('CENTRO', dist)\n",
+    "    return dist / len(centroid_list)\n",
+    "\n",
+    "def process(nrClustere, cls, path, nrFiles, size_model):\n",
+    "    total = 0\n",
+    "    centroid_list = []\n",
+    "    for i in range(0,nrClustere):\n",
+    "        cluster_dict = extragere_puncte_cluster(cls[i],path, nrFiles)\n",
+    "        total += calcul_inter_cluster(X_dict, cluster_dict)\n",
+    "        return 0\n",
+    "        centroid_list.append(calc_centro(X_dict, cluster_dict, size_model))\n",
+    "        \n",
+    "    intra = calcul_intra_cluster(centroid_list)\n",
+    "    total /= nrClustere    \n",
+    "    return total, intra    \n",
+    "\n",
+    "## citeste modelul si elimina spatiul final din chei\n",
+    "def read_model(path):\n",
+    "    r = open(path, 'r')\n",
+    "    X_dict = json.load(r)\n",
+    "    r.close()\n",
+    "    new_x_dict = {}\n",
+    "    for elem in X_dict:\n",
+    "        new_elem = elem[0:len(elem)-1]\n",
+    "        new_x_dict[new_elem] = X_dict[elem]\n",
+    "    return new_x_dict"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Doc2vec"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 56,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "12.739839696856485 29.075036056746647\n"
+     ]
+    }
+   ],
+   "source": [
+    "r = open('../Date/doc2vec/Venue/d2v_venue_complete.txt', 'r')\n",
+    "X_dict = json.load(r)\n",
+    "r.close()\n",
+    "cls = ['0','1','2','3','4','5','6','7','8','9']\n",
+    "\n",
+    "total, intra = process(10,cls,'../Rezultate/Fuzzy/Venue/Doc2vec/10clus_file', 169, 300)\n",
+    "print(total, intra)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Word2Vec pretrained avg"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 58,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "16.579395541630806 468.82985506129336\n"
+     ]
+    }
+   ],
+   "source": [
+    "X_dict = read_model('../Date/word2vec-pretrained/Venue/w2v_avg_50_c.txt')\n",
+    "cls = ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16']\n",
+    "\n",
+    "total, intra = process(17,cls,'../Rezultate/Fuzzy/Venue/Word2vec_pretrained/avg/17clus_file', 169, 50)\n",
+    "print(total, intra)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Word2Vec pretrained sum"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "58.339783905992775 1827.1907605417675\n"
+     ]
+    }
+   ],
+   "source": [
+    "X_dict = read_model('../Date/word2vec-pretrained/Venue/w2v_sum_50_c.txt')\n",
+    "cls = ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17']\n",
+    "\n",
+    "total, intra = process(18,cls,'../Rezultate/Fuzzy/Venue/Word2vec_pretrained/avg/17clus_file', 169, 50)\n",
+    "print(total, intra)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Word2Vec gensim avg"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "38.127820772737714 1258.061155657814\n"
+     ]
+    }
+   ],
+   "source": [
+    "X_dict = read_model('../Date/word2vec-gensim/Venue/w2v_gensim_avg_50_c.txt')\n",
+    "cls = ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23']\n",
+    "\n",
+    "total, intra = process(24,cls,'../Rezultate/Fuzzy/Venue/Word2vec_gensim/avg/24clus_file', 169, 50)\n",
+    "print(total, intra)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Word2Vec gensim sum"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      
+      "0.05000339818590517\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "4.401194418563496\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.05001488306102849\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.1500149750753317\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "33.352530045695715\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.8003821573839365\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "26.104591451525714\n",
+         "18.706082026785232\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.4500318450468255\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "12.600641135532257\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "30.702954911940495\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "13.601972178802924\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "3.100097264609947\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "5.150228022746567\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "117.655341239155\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.500036103805953\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.10006648432183271"
+     ]
+    }
+   ],
+   "source": [
+    "X_dict = read_model('../Date/word2vec-gensim/Venue/w2v_gensim_sum_50_c.txt')\n",
+    "cls = ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19']\n",
+    "\n",
+    "total, intra = process(20,cls,'../Rezultate/Fuzzy/Venue/Word2vec_gensim/sum/20clus_file', 169, 50)\n",
+    "print(total, intra)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Word2Vec tensorflow avg "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "cluster  2524978200.1803775 1497\n",
+      "cluster  4586759091.463196 2086\n",
+      "CENTRO 137.8397449973209\n",
+      "1942761.0230843073 68.91987249866045\n"
+     ]
+    }
+   ],
+   "source": [
+    "X_dict = read_model('../Date/word2vec-tensorflow/Venue/w2v_tf_avg_50_c.txt')\n",
+    "cls = ['0','1']\n",
+    "\n",
+    "total, intra = process(2,cls,'../Rezultate/Fuzzy/Venue/Word2vec_tensorflow/avg/2clus_file', 169, 50)\n",
+    "print(total, intra)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Word2Vec tensorflow sum"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2522218.7783291964 469.1564473995968\n"
+     ]
+    }
+   ],
+   "source": [
+    "X_dict = read_model('../Date/word2vec-tensorflow/Venue/w2v_tf_sum_50_c.txt')\n",
+    "cls = ['0','1','2','3','4']\n",
+    "\n",
+    "total, intra = process(5,cls,'../Rezultate/Fuzzy/Venue/Word2vec_tensorflow/sum/5clus_file', 169, 50)\n",
+    "print(total, intra)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
