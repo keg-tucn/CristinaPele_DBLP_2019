@@ -1,0 +1,3 @@
+Clusterizarea articolelor stiintifice folosind word embeddings
+Extragerea domeniului de cercetare din articolelor stiintifice folosind word embedding si metode de clusterizare
+jacard
