@@ -24,4 +24,12 @@ Versiunea10/word2vec/GoogleNews-vectors-negative300/model/
 Versiunea11/Date/*
 Versiunea11/Rezultate/fos/fos_list.txt
 Versiunea11/Rezultate/fos/fos_list_pretty.txt
-
+Versiunea11/Models/
+Final/Date/doc2vec/
+Final/Date/Initiale/lista_abstract_completa.txt
+Final/Date/Initiale/lista_abstr.txt
+Final/Date/TF-IDF/
+Final/Date/word2vec-gensim/Abstract
+Final/Date/word2vec-pretrained/Abstract
+Final/Rezultate/Fuzzy/Abstract/100-clase
+Final/Models/
